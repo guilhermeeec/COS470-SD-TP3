@@ -1,0 +1,18 @@
+Passo 1) Clonar o diretório:
+
+~ git clone https://github.com/rpclib/rpclib
+
+Passo 2) Entre no diretório do repositório local
+
+~ cd rpclib
+
+Passo 3) Criar diretório para os resultados da compilação e acessá-lo
+
+~ mkdir build
+~ cd build
+
+Passo 4) Executar a seguinte sequência de comandos para compilar:
+
+~ cmake ..
+~ make
+~ sudo make install
