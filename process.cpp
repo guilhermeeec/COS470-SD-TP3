@@ -16,8 +16,8 @@
 #define NUM_THREADS         1
 #define PROCESS_IP          "127.0.0.1"
 #define COORDINATOR_IP      "127.0.0.1"
-#define COORDINATOR_PORT    8080
-#define BASE_PORT           8081
+#define COORDINATOR_PORT    9090
+#define BASE_PORT           9091
 
 bool is_granted = false;
 
@@ -74,10 +74,22 @@ int main(int argc, char** argv)
     int iter_number = get_iter_number(argc, argv);
 
     int rcv_grant_port = BASE_PORT + pid;
-    create_rcv_grant_server(pid, rcv_grant_port);
+    rpc::server grant_server(rcv_grant_port);
+    grant_server.bind("grant", &grant);
+    grant_server.async_run(NUM_THREADS);
+
+    //create_rcv_grant_server(pid, rcv_grant_port);
 
     rpc::client client(COORDINATOR_IP, COORDINATOR_PORT);
-    process_loop(iter_number, pid, rcv_grant_port, client);
-    
+    //process_loop(iter_number, pid, rcv_grant_port, client);
+    for(int r=0; r<iter_number; r++) 
+    {
+        client.call("request", pid, PROCESS_IP, rcv_grant_port);
+
+        // TODO 2: pensar em usar blocking wait
+        while(!is_granted);
+        log_results(pid);
+        client.call("release", pid, PROCESS_IP);
+    }
     return 0;
 }

@@ -108,11 +108,11 @@ void store_statistics(int msg_type, const Process_info& process)
         break;
 
         case RELEASE:
-        std::cout << "[S] Grant-" << process.get_pid() << "-" << get_date() << std::endl; 
+        std::cout << "[R] Release-" << process.get_pid() << "-" << get_date() << std::endl; 
         break;
 
         case GRANT:
-        std::cout << "[R] Release-" << process.get_pid() << "-" << get_date() << std::endl; 
+        std::cout << "[S] Grant-" << process.get_pid() << "-" << get_date() << std::endl; 
         break;
     
         default:
@@ -124,9 +124,9 @@ void send_grant(Process_info& process)
 {
     std::string ip = process.get_ip();
     int port = process.get_port();
+    store_statistics(GRANT, process);
     rpc::client client(ip, port);  
     client.call("grant");
-    store_statistics(GRANT, process);
 }
 
 void request(int pid, const std::string& ip, int port) 
@@ -157,7 +157,7 @@ void release(int pid, const std::string& ip)
 
 int main() 
 {
-    rpc::server srv(8080);
+    rpc::server srv(9090);
 
     srv.bind("request", &request);
     srv.bind("release", &release);
