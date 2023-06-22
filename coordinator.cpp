@@ -1,0 +1,165 @@
+// g++ -std=c++11 -o example_server_frontend example_server_frontend.cpp -lrpc -lpthread
+
+#include <iostream>
+#include <queue>
+#include "rpc/server.h"
+#include "rpc/client.h"
+#include <mutex>
+#include <chrono>
+
+#define GRANT           0
+#define REQUEST         1
+#define RELEASE         2
+#define NUM_THREADS     20
+
+std::mutex mtx_fifo;
+std::mutex mtx_send_grant;
+std::mutex mtx_write_stats;
+
+class Process_info {
+    public:
+        Process_info(int pid, const std::string& ip, int port)
+            : pid_(pid), ip_(ip), port_(port) {}
+
+        const int get_pid() const {
+            return pid_;
+        }
+
+        const std::string& get_ip() const {
+            return ip_;
+        }
+
+        int get_port() const {
+            return port_;
+        }
+
+    private:
+        int pid_;
+        std::string ip_;
+        int port_;
+};
+
+class Process_fifo {
+    public:
+        bool empty() {
+            mtx_fifo.lock();
+            fifo.empty();
+            mtx_fifo.unlock();
+        }
+
+        void push(Process_info process) {
+            mtx_fifo.lock();
+            fifo.push(process);
+            mtx_fifo.unlock();
+        }
+
+        void pop() {
+            mtx_fifo.lock();
+            fifo.pop();
+            mtx_fifo.unlock();
+        }
+
+        Process_info head() {
+            mtx_fifo.lock();
+            Process_info process = fifo.front();
+            mtx_fifo.unlock();
+            return process;
+        }
+
+    private:
+        std::queue<Process_info> fifo;
+};
+
+Process_fifo fifo;
+
+void foo() {
+    std::cout << "foo was called!" << std::endl;
+}
+
+std::string get_date() 
+{
+    auto current_time = std::chrono::system_clock::now();
+
+    auto time = std::chrono::system_clock::to_time_t(current_time);
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(current_time.time_since_epoch()) % 1000;
+    auto timeinfo = *std::localtime(&time);
+
+    std::stringstream ss;
+    ss << std::setfill('0');
+    ss << std::setw(2) << timeinfo.tm_hour << ":"
+       << std::setw(2) << timeinfo.tm_min << ":"
+       << std::setw(2) << timeinfo.tm_sec << "."
+       << std::setw(3) << milliseconds.count();
+
+    return ss.str();
+}
+
+void store_statistics(int msg_type, const Process_info& process) 
+{
+    // TODO 2
+    switch (msg_type)
+    {
+        case REQUEST:
+        std::cout << "[R] Request-" << process.get_pid() << "-" << get_date() << std::endl; 
+        break;
+
+        case RELEASE:
+        std::cout << "[S] Grant-" << process.get_pid() << "-" << get_date() << std::endl; 
+        break;
+
+        case GRANT:
+        std::cout << "[R] Release-" << process.get_pid() << "-" << get_date() << std::endl; 
+        break;
+    
+        default:
+        break;
+    }
+}
+
+void send_grant(Process_info& process) 
+{
+    std::string ip = process.get_ip();
+    int port = process.get_port();
+    int pid = process.get_pid();
+    rpc::client client(ip, port);  
+    client.call("grant");
+    store_statistics(GRANT, process);
+}
+
+void request(Process_info& process) 
+{
+    store_statistics(REQUEST, process);
+
+    mtx_send_grant.lock();
+    if(fifo.empty()) {
+        send_grant(process);
+        return;
+    }
+    fifo.push(process);
+    mtx_send_grant.unlock();
+}
+
+void release(Process_info& process)
+{
+    store_statistics(RELEASE, process);
+
+    fifo.pop();
+    if(!fifo.empty()) {
+        Process_info process = fifo.head();
+        send_grant(process);
+    }
+}
+
+int main() 
+{
+    rpc::server srv(8080);
+
+    srv.bind("request", &request);
+    srv.bind("release", &release);
+
+    srv.async_run(NUM_THREADS);
+
+    // TODO 1: terminal
+
+    return 0;
+}
