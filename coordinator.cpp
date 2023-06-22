@@ -1,4 +1,4 @@
-// g++ -std=c++11 -o example_server_frontend example_server_frontend.cpp -lrpc -lpthread
+// g++ -std=c++11 -o coordinator coordinator.cpp -lrpc -lpthread
 
 #include <iostream>
 #include <queue>
@@ -6,6 +6,9 @@
 #include "rpc/client.h"
 #include <mutex>
 #include <chrono>
+#include <iomanip> 
+#include <string>
+#include <sstream>
 
 #define GRANT           0
 #define REQUEST         1
@@ -43,8 +46,9 @@ class Process_fifo {
     public:
         bool empty() {
             mtx_fifo.lock();
-            fifo.empty();
+            bool is_empty = fifo.empty();
             mtx_fifo.unlock();
+            return is_empty;
         }
 
         void push(Process_info process) {
@@ -126,8 +130,9 @@ void send_grant(Process_info& process)
     store_statistics(GRANT, process);
 }
 
-void request(Process_info& process) 
+void request(int pid, const std::string& ip, int port) 
 {
+    Process_info process(pid, ip, port);
     store_statistics(REQUEST, process);
 
     mtx_send_grant.lock();
@@ -139,8 +144,9 @@ void request(Process_info& process)
     mtx_send_grant.unlock();
 }
 
-void release(Process_info& process)
+void release(int pid, const std::string& ip, int port)
 {
+    Process_info process(pid, ip, port);
     store_statistics(RELEASE, process);
 
     fifo.pop();
@@ -158,6 +164,8 @@ int main()
     srv.bind("release", &release);
 
     srv.async_run(NUM_THREADS);
+
+    while(1);
 
     // TODO 1: terminal
 
