@@ -13,7 +13,7 @@
 #define GRANT           0
 #define REQUEST         1
 #define RELEASE         2
-#define NUM_THREADS     20
+#define NUM_THREADS     12
 
 std::mutex mtx_fifo;
 std::mutex mtx_send_grant;
@@ -124,7 +124,6 @@ void send_grant(Process_info& process)
 {
     std::string ip = process.get_ip();
     int port = process.get_port();
-    int pid = process.get_pid();
     rpc::client client(ip, port);  
     client.call("grant");
     store_statistics(GRANT, process);
@@ -144,15 +143,15 @@ void request(int pid, const std::string& ip, int port)
     mtx_send_grant.unlock();
 }
 
-void release(int pid, const std::string& ip, int port)
+void release(int pid, const std::string& ip)
 {
-    Process_info process(pid, ip, port);
-    store_statistics(RELEASE, process);
+    Process_info requesting_process(pid, ip, 0);
+    store_statistics(RELEASE, requesting_process);
 
     fifo.pop();
     if(!fifo.empty()) {
-        Process_info process = fifo.head();
-        send_grant(process);
+        Process_info top_process = fifo.head();
+        send_grant(top_process);
     }
 }
 
