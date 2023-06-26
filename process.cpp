@@ -82,7 +82,6 @@ std::string get_date()
 
 void log_results(int pid, int sleep_time) 
 {
-    // TODO 1
     std::ofstream results;
     results.open("resultado.txt", std::ios::app);
     if (results.is_open()) {
@@ -92,7 +91,6 @@ void log_results(int pid, int sleep_time)
     } else {
         std::cout << "Erro ao abrir o arquivo!" << std::endl;
     }
-    //std::cout << "[ID=" << pid << ", ROUND=" << round << "] Acessando arquivo resultados.txt" << std::endl;
 }
 
 
