@@ -64,6 +64,7 @@ void process_loop(int iter_number, int pid, int rcv_grant_port, rpc::client& cli
         // TODO 2: pensar em usar blocking wait
         while(!is_granted);
         log_results(pid);
+        
         client.call("release", pid, PROCESS_IP);
     }
 }

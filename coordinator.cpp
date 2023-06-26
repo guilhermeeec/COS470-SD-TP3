@@ -44,30 +44,31 @@ class Process_info {
 
 class Process_fifo {
     public:
-        bool empty() {
+        bool empty() { 
+            //std::cout << "--> Antes de empty: " << fifo.size() << std::endl;
             mtx_fifo.lock();
             bool is_empty = fifo.empty();
             mtx_fifo.unlock();
+            //std::cout << "--> Depois de empty: " << fifo.size() << std::endl;
             return is_empty;
         }
 
         void push(Process_info process) {
+            //std::cout << "--> Antes de push: " << fifo.size() << std::endl;
             mtx_fifo.lock();
             fifo.push(process);
             mtx_fifo.unlock();
+            //std::cout << "--> Depois de push: " << fifo.size() << std::endl;
         }
 
-        void pop() {
+        Process_info pop() {
+            //std::cout << "--> Antes de pop: " << fifo.size() << std::endl;
             mtx_fifo.lock();
+            Process_info head_process = fifo.front();
             fifo.pop();
             mtx_fifo.unlock();
-        }
-
-        Process_info head() {
-            mtx_fifo.lock();
-            Process_info process = fifo.front();
-            mtx_fifo.unlock();
-            return process;
+            //std::cout << "--> Depois de pop: " << fifo.size() << std::endl;
+            return head_process;
         }
 
     private:
@@ -86,6 +87,7 @@ std::string get_date()
 
     auto time = std::chrono::system_clock::to_time_t(current_time);
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(current_time.time_since_epoch()) % 1000;
+    auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(current_time.time_since_epoch()) % 1000000;
     auto timeinfo = *std::localtime(&time);
 
     std::stringstream ss;
@@ -93,7 +95,8 @@ std::string get_date()
     ss << std::setw(2) << timeinfo.tm_hour << ":"
        << std::setw(2) << timeinfo.tm_min << ":"
        << std::setw(2) << timeinfo.tm_sec << "."
-       << std::setw(3) << milliseconds.count();
+       << std::setw(3) << milliseconds.count() << "."
+       << std::setw(6) << microseconds.count();
 
     return ss.str();
 }
@@ -137,6 +140,7 @@ void request(int pid, const std::string& ip, int port)
     mtx_send_grant.lock();
     if(fifo.empty()) {
         send_grant(process);
+        mtx_send_grant.unlock();
         return;
     }
     fifo.push(process);
@@ -148,9 +152,8 @@ void release(int pid, const std::string& ip)
     Process_info requesting_process(pid, ip, 0);
     store_statistics(RELEASE, requesting_process);
 
-    fifo.pop();
     if(!fifo.empty()) {
-        Process_info top_process = fifo.head();
+        Process_info top_process= fifo.pop();
         send_grant(top_process);
     }
 }
