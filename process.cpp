@@ -49,25 +49,12 @@ void create_rcv_grant_server(int pid, int rcv_grant_port)
     grant_server.async_run(NUM_THREADS);
 }
 
-void log_results(int pid) 
+void log_results(int pid, int round) 
 {
     // TODO 3
-    std::cout << "[ID=" << pid << "] Acessando arquivo resultados.txt" << std::endl;
+    std::cout << "[ID=" << pid << ", ROUND=" << round << "] Acessando arquivo resultados.txt" << std::endl;
 }
 
-void process_loop(int iter_number, int pid, int rcv_grant_port, rpc::client& client) 
-{
-    for(int r=0; r<iter_number; r++) 
-    {
-        client.call("request", pid, PROCESS_IP, rcv_grant_port);
-
-        // TODO 2: pensar em usar blocking wait
-        while(!is_granted);
-        log_results(pid);
-        
-        client.call("release", pid, PROCESS_IP);
-    }
-}
 
 int main(int argc, char** argv) 
 {
@@ -83,14 +70,19 @@ int main(int argc, char** argv)
 
     rpc::client client(COORDINATOR_IP, COORDINATOR_PORT);
     //process_loop(iter_number, pid, rcv_grant_port, client);
+
     for(int r=0; r<iter_number; r++) 
     {
         client.call("request", pid, PROCESS_IP, rcv_grant_port);
 
         // TODO 2: pensar em usar blocking wait
         while(!is_granted);
-        log_results(pid);
+        log_results(pid, r);
+        
+        //std::cout <<  " Enviei release ROUND=" << r << std::endl;
         client.call("release", pid, PROCESS_IP);
+        is_granted = false;
+        //std::cout <<  " Recebi release ROUND=" << r << std::endl;
     }
     return 0;
 }

@@ -71,6 +71,13 @@ class Process_fifo {
             return head_process;
         }
 
+        Process_info head() {
+            mtx_fifo.lock();
+            Process_info process = fifo.front();
+            mtx_fifo.unlock();
+            return process;
+        }
+
     private:
         std::queue<Process_info> fifo;
 };
@@ -86,7 +93,7 @@ std::string get_date()
     auto current_time = std::chrono::system_clock::now();
 
     auto time = std::chrono::system_clock::to_time_t(current_time);
-    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(current_time.time_since_epoch()) % 1000;
+    //auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(current_time.time_since_epoch()) % 1000;
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(current_time.time_since_epoch()) % 1000000;
     auto timeinfo = *std::localtime(&time);
 
@@ -95,7 +102,7 @@ std::string get_date()
     ss << std::setw(2) << timeinfo.tm_hour << ":"
        << std::setw(2) << timeinfo.tm_min << ":"
        << std::setw(2) << timeinfo.tm_sec << "."
-       << std::setw(3) << milliseconds.count() << "."
+       //<< std::setw(3) << milliseconds.count() << "."
        << std::setw(6) << microseconds.count();
 
     return ss.str();
@@ -103,6 +110,7 @@ std::string get_date()
 
 void store_statistics(int msg_type, const Process_info& process) 
 {
+    mtx_write_stats.lock();
     // TODO 2
     switch (msg_type)
     {
@@ -121,6 +129,7 @@ void store_statistics(int msg_type, const Process_info& process)
         default:
         break;
     }
+    mtx_write_stats.unlock();
 }
 
 void send_grant(Process_info& process) 
@@ -138,11 +147,8 @@ void request(int pid, const std::string& ip, int port)
     store_statistics(REQUEST, process);
 
     mtx_send_grant.lock();
-    if(fifo.empty()) {
+    if(fifo.empty())
         send_grant(process);
-        mtx_send_grant.unlock();
-        return;
-    }
     fifo.push(process);
     mtx_send_grant.unlock();
 }
@@ -152,8 +158,9 @@ void release(int pid, const std::string& ip)
     Process_info requesting_process(pid, ip, 0);
     store_statistics(RELEASE, requesting_process);
 
+    fifo.pop();
     if(!fifo.empty()) {
-        Process_info top_process= fifo.pop();
+        Process_info top_process = fifo.head();
         send_grant(top_process);
     }
 }
