@@ -51,7 +51,7 @@ void create_rcv_grant_server(int pid, int rcv_grant_port)
 
 void log_results(int pid, int round) 
 {
-    // TODO 3
+    // TODO 1
     std::cout << "[ID=" << pid << ", ROUND=" << round << "] Acessando arquivo resultados.txt" << std::endl;
 }
 
@@ -66,10 +66,7 @@ int main(int argc, char** argv)
     grant_server.bind("grant", &grant);
     grant_server.async_run(NUM_THREADS);
 
-    //create_rcv_grant_server(pid, rcv_grant_port);
-
     rpc::client client(COORDINATOR_IP, COORDINATOR_PORT);
-    //process_loop(iter_number, pid, rcv_grant_port, client);
 
     for(int r=0; r<iter_number; r++) 
     {
@@ -79,10 +76,8 @@ int main(int argc, char** argv)
         while(!is_granted);
         log_results(pid, r);
         
-        //std::cout <<  " Enviei release ROUND=" << r << std::endl;
         client.call("release", pid, PROCESS_IP);
         is_granted = false;
-        //std::cout <<  " Recebi release ROUND=" << r << std::endl;
     }
     return 0;
 }

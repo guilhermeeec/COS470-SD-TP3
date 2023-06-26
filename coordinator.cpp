@@ -45,29 +45,23 @@ class Process_info {
 class Process_fifo {
     public:
         bool empty() { 
-            //std::cout << "--> Antes de empty: " << fifo.size() << std::endl;
             mtx_fifo.lock();
             bool is_empty = fifo.empty();
             mtx_fifo.unlock();
-            //std::cout << "--> Depois de empty: " << fifo.size() << std::endl;
             return is_empty;
         }
 
         void push(Process_info process) {
-            //std::cout << "--> Antes de push: " << fifo.size() << std::endl;
             mtx_fifo.lock();
             fifo.push(process);
             mtx_fifo.unlock();
-            //std::cout << "--> Depois de push: " << fifo.size() << std::endl;
         }
 
         Process_info pop() {
-            //std::cout << "--> Antes de pop: " << fifo.size() << std::endl;
             mtx_fifo.lock();
             Process_info head_process = fifo.front();
             fifo.pop();
             mtx_fifo.unlock();
-            //std::cout << "--> Depois de pop: " << fifo.size() << std::endl;
             return head_process;
         }
 
@@ -83,10 +77,6 @@ class Process_fifo {
 };
 
 Process_fifo fifo;
-
-void foo() {
-    std::cout << "foo was called!" << std::endl;
-}
 
 std::string get_date() 
 {
@@ -111,7 +101,8 @@ std::string get_date()
 void store_statistics(int msg_type, const Process_info& process) 
 {
     mtx_write_stats.lock();
-    // TODO 2
+
+    // TODO 2: as estatísticas devem ficar em uma estrutura
     switch (msg_type)
     {
         case REQUEST:
