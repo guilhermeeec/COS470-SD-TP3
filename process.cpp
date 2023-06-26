@@ -1,6 +1,7 @@
 // g++ -std=c++11 -o process process.cpp -lrpc -lpthread
 
 #include <iostream>
+#include <fstream>
 #include <queue>
 #include "rpc/server.h"
 #include "rpc/client.h"
@@ -9,6 +10,7 @@
 #include <iomanip> 
 #include <string>
 #include <sstream>
+#include <unistd.h>
 
 #define GRANT               0
 #define REQUEST             1
@@ -22,7 +24,7 @@
 bool is_granted = false;
 
 int get_id(int argc, char** argv) {
-    if(argc != 3) {
+    if(argc != 4) {
         std::cout << "Numero incorreto de argumentos" << std::endl;
         exit(-1);
     }
@@ -30,11 +32,19 @@ int get_id(int argc, char** argv) {
 }
 
 int get_iter_number(int argc, char** argv) {
-    if(argc != 3) {
+    if(argc != 4) {
         std::cout << "Numero incorreto de argumentos" << std::endl;
         exit(-1);
     }
     return std::stoi(argv[2]);
+}
+
+int get_sleep_time(int argc, char** argv) {
+    if(argc != 4) {
+        std::cout << "Numero incorreto de argumentos" << std::endl;
+        exit(-1);
+    }
+    return std::stoi(argv[3]);
 }
 
 void grant()
@@ -48,11 +58,41 @@ void create_rcv_grant_server(int pid, int rcv_grant_port)
     grant_server.bind("grant", &grant);
     grant_server.async_run(NUM_THREADS);
 }
+// TODO: ARQUIVO SEPARADO PARA FUNÇÕES ÚTEIS
 
-void log_results(int pid, int round) 
+std::string get_date() 
+{
+    auto current_time = std::chrono::system_clock::now();
+
+    auto time = std::chrono::system_clock::to_time_t(current_time);
+    //auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(current_time.time_since_epoch()) % 1000;
+    auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(current_time.time_since_epoch()) % 1000000;
+    auto timeinfo = *std::localtime(&time);
+
+    std::stringstream ss;
+    ss << std::setfill('0');
+    ss << std::setw(2) << timeinfo.tm_hour << ":"
+       << std::setw(2) << timeinfo.tm_min << ":"
+       << std::setw(2) << timeinfo.tm_sec << "."
+       //<< std::setw(3) << milliseconds.count() << "."
+       << std::setw(6) << microseconds.count();
+
+    return ss.str();
+}
+
+void log_results(int pid, int sleep_time) 
 {
     // TODO 1
-    std::cout << "[ID=" << pid << ", ROUND=" << round << "] Acessando arquivo resultados.txt" << std::endl;
+    std::ofstream results;
+    results.open("resultado.txt", std::ios::app);
+    if (results.is_open()) {
+        results << "[" << pid << "] - " << get_date() << std::endl;
+        results.close();
+        sleep(sleep_time);
+    } else {
+        std::cout << "Erro ao abrir o arquivo!" << std::endl;
+    }
+    //std::cout << "[ID=" << pid << ", ROUND=" << round << "] Acessando arquivo resultados.txt" << std::endl;
 }
 
 
@@ -60,6 +100,7 @@ int main(int argc, char** argv)
 {
     int pid = get_id(argc, argv);
     int iter_number = get_iter_number(argc, argv);
+    int sleep_time = get_sleep_time(argc, argv);
 
     int rcv_grant_port = BASE_PORT + pid;
     rpc::server grant_server(rcv_grant_port);
@@ -74,7 +115,7 @@ int main(int argc, char** argv)
 
         // TODO 2: pensar em usar blocking wait
         while(!is_granted);
-        log_results(pid, r);
+        log_results(pid, sleep_time);
         
         client.call("release", pid, PROCESS_IP);
         is_granted = false;
