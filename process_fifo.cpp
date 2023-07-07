@@ -21,3 +21,15 @@ Process_info Process_fifo::head() {
     std::lock_guard<std::mutex> lock(mtx_fifo);
     return fifo.front();
 }
+
+std::ostream& operator<<(std::ostream& out, const Process_fifo& process_fifo) {
+    std::queue<Process_info> fifo_copy = process_fifo.fifo;
+    out << "Queue: ";
+    while (!fifo_copy.empty()) {
+        Process_info process_info_element = fifo_copy.front();
+        out << process_info_element << " ";
+        fifo_copy.pop();
+    }
+    out << std::endl; 
+    return out;
+}

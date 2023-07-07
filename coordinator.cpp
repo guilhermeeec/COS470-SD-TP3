@@ -33,7 +33,7 @@ void store_statistics(int msg_type, const Process_info& process)
 {
     mtx_write_stats.lock();
 
-    // TODO 4 e 5: as estatísticas devem ficar em uma estrutura
+    // TODO 4: as estatísticas devem ficar em uma estrutura
     switch (msg_type)
     {
         case REQUEST:

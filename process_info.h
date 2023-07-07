@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <iostream>
 
 class Process_info {
     public:
@@ -15,3 +16,5 @@ class Process_info {
         std::string ip_;
         int port_;
 };
+
+std::ostream& operator<<(std::ostream& out, const Process_info& process_info);
