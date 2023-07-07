@@ -1,6 +1,10 @@
-1) -- Esquita no arquivo de resultados.txt dos processos --
-2) Usar espera bloqueante nos processos
-3) Criar estrutura de estatísticas
-4) Fazer terminal
+1) Escrita no arquivo de resultados.txt dos processos       Completo        Dionísio
+2) Usar arquivos separados                                  Andamento       Araujo
+3) Fazer makefile
+4) Criar estrutura de estatísticas
 5) Escrever as estatísticas no arquivos logs.txt
-6) Organizar funções e classes em arquivos separados
+6) Fazer terminal
+
+7) Escrever script de validação do arquivo
+8) Escrever scripts de teste de desempenho
+9) Usar espera bloqueante nos processos
