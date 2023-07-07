@@ -18,47 +18,18 @@ g++ -std=c++11 utils.o process_info.o process_fifo.o coordinator.o -lrpc -lpthre
 #include "process_info.h"
 #include "process_fifo.h"
 #include "utils.h"
-
-#define GRANT           0
-#define REQUEST         1
-#define RELEASE         2
-#define NUM_THREADS     12
+#include "record_list.h"
 
 std::mutex mtx_send_grant;
-std::mutex mtx_write_stats;
 
 Process_fifo fifo;
-
-void store_statistics(int msg_type, const Process_info& process) 
-{
-    mtx_write_stats.lock();
-
-    // TODO 4: as estatísticas devem ficar em uma estrutura
-    switch (msg_type)
-    {
-        case REQUEST:
-        std::cout << "[R] Request-" << process.get_pid() << "-" << get_date() << std::endl; 
-        break;
-
-        case RELEASE:
-        std::cout << "[R] Release-" << process.get_pid() << "-" << get_date() << std::endl; 
-        break;
-
-        case GRANT:
-        std::cout << "[S] Grant-" << process.get_pid() << "-" << get_date() << std::endl; 
-        break;
-    
-        default:
-        break;
-    }
-    mtx_write_stats.unlock();
-}
+Record_list stats("log.txt");
 
 void send_grant(Process_info& process) 
 {
     std::string ip = process.get_ip();
     int port = process.get_port();
-    store_statistics(GRANT, process);
+    stats.add_record(GRANT, process);
     rpc::client client(ip, port);  
     client.call("grant");
 }
@@ -66,7 +37,7 @@ void send_grant(Process_info& process)
 void request(int pid, const std::string& ip, int port) 
 {
     Process_info process(pid, ip, port);
-    store_statistics(REQUEST, process);
+    stats.add_record(REQUEST, process);
 
     mtx_send_grant.lock();
     if(fifo.empty())
@@ -77,8 +48,7 @@ void request(int pid, const std::string& ip, int port)
 
 void release(int pid, const std::string& ip)
 {
-    Process_info requesting_process(pid, ip, 0);
-    store_statistics(RELEASE, requesting_process);
+    stats.add_record(RELEASE, pid);
 
     fifo.pop();
     if(!fifo.empty()) {
@@ -87,16 +57,24 @@ void release(int pid, const std::string& ip)
     }
 }
 
-int main() 
+int main(int argc, char** argv) 
 {
+    if(argc != 2) {
+        std::cout << "Usage: coordinator [thread_num]" << std::endl;
+        return -1;
+    }
+    int num_threads = std::stoi(argv[1]);
+
     rpc::server srv(9090);
 
     srv.bind("request", &request);
     srv.bind("release", &release);
 
-    srv.async_run(NUM_THREADS);
+    srv.async_run(num_threads);
 
-    while(1);
+    std::cin.ignore();
+    stats.print_access_count();
+    //while(1);
 
     // TODO 6: terminal
 

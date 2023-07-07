@@ -29,7 +29,7 @@ bool is_granted = false;
 
 int get_ith_integer_argument(int argc, char** argv, int index) {
     if(argc != 4) {
-        std::cout << "Uso: process [id] [iter_number] [sleep_time]" << std::endl;
+        std::cout << "Usage: process [id] [iter_number] [sleep_time]" << std::endl;
         exit(-1);
     }
     if(index > argc) 

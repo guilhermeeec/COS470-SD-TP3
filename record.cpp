@@ -42,7 +42,7 @@ std::ostream& operator<<(std::ostream& out, const Record& record) {
         break;
 
         default:
-            break;
+        break;
     }
     return out;
 }

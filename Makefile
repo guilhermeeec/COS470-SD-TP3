@@ -3,7 +3,7 @@ CFLAGS = -Wall -std=c++11
 RPCFLAGS = -lrpc -lpthread
 
 PROCESS_SOURCES = process.cpp utils.cpp
-COORDINATOR_SOURCES = coordinator.cpp utils.cpp process_info.cpp process_fifo.cpp
+COORDINATOR_SOURCES = coordinator.cpp utils.cpp process_info.cpp process_fifo.cpp record.cpp record_list.cpp
 
 PROCESS_OBJECTS = $(PROCESS_SOURCES:.cpp=.o)
 COORDINATOR_OBJECTS = $(COORDINATOR_SOURCES:.cpp=.o)
