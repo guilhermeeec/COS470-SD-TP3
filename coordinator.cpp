@@ -57,6 +57,41 @@ void release(int pid, const std::string& ip)
     }
 }
 
+void terminal_interaction() {
+    bool running = true;
+    while(running) {
+        std::cout << std::endl;
+        std::cout << "Terminal commands:" << std::endl;
+        std::cout << "1- Print current requests queue" << std::endl;
+        std::cout << "2- Print the number of times each process was attended" << std::endl;
+        std::cout << "3- Finish coordinator execution" << std::endl;
+        std::cout << "[IN]: ";
+
+        char in = std::cin.get();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
+        std::cout << std::endl;
+
+        switch (in)
+        {
+            case '1':
+            std::cout << fifo;
+            break;
+
+            case '2':
+            stats.print_access_count();
+            break;
+
+            case '3':
+            running = false;
+            break;
+
+            default:
+            std::cout << "Invalid option" << std::endl;
+            break;
+        }
+    }
+}
+
 int main(int argc, char** argv) 
 {
     if(argc != 2) {
@@ -72,11 +107,7 @@ int main(int argc, char** argv)
 
     srv.async_run(num_threads);
 
-    std::cin.ignore();
-    stats.print_access_count();
-    //while(1);
-
-    // TODO 6: terminal
+    terminal_interaction();
 
     return 0;
 }

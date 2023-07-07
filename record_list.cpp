@@ -14,7 +14,7 @@ Record_list::~Record_list() {
 void Record_list::add_record(msg_type_t msg_type, Process_info process_info) {
     std::lock_guard<std::mutex> lock(mtx);
     Record record(msg_type, process_info);
-    std::cout << record;
+    //std::cout << record;
     this->records_list.push_back(record);
     if(msg_type == RELEASE)
         this->increment_count_map(process_info.get_pid());     
@@ -23,7 +23,7 @@ void Record_list::add_record(msg_type_t msg_type, Process_info process_info) {
 void Record_list::add_record(msg_type_t msg_type, int pid) {
     std::lock_guard<std::mutex> lock(mtx);
     Record record(msg_type, pid);
-    std::cout << record;
+    //std::cout << record;
     this->records_list.push_back(record);
     if(msg_type == RELEASE)
         this->increment_count_map(pid);     

@@ -16,6 +16,6 @@ int Process_info::get_port() const {
 }
 
 std::ostream& operator<<(std::ostream& out, const Process_info& process_info) {
-    out << "pid = " << process_info.get_ip() << std::endl; 
+    out << "pid=" << process_info.get_pid() << std::endl; 
     return out;
 }

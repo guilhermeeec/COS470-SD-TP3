@@ -24,7 +24,7 @@ Process_info Process_fifo::head() {
 
 std::ostream& operator<<(std::ostream& out, const Process_fifo& process_fifo) {
     std::queue<Process_info> fifo_copy = process_fifo.fifo;
-    out << "Queue: ";
+    out << "Queue: " << std::endl;
     while (!fifo_copy.empty()) {
         Process_info process_info_element = fifo_copy.front();
         out << process_info_element << " ";
