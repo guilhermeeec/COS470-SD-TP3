@@ -20,6 +20,8 @@ g++ -std=c++11 utils.o process_info.o process_fifo.o coordinator.o -lrpc -lpthre
 #include "utils.h"
 #include "record_list.h"
 
+#define COORDINATOR_PORT    9090
+
 std::mutex mtx_send_grant;
 
 Process_fifo fifo;
@@ -100,7 +102,7 @@ int main(int argc, char** argv)
     }
     int num_threads = std::stoi(argv[1]);
 
-    rpc::server srv(9090);
+    rpc::server srv(COORDINATOR_PORT);
 
     srv.bind("request", &request);
     srv.bind("release", &release);
