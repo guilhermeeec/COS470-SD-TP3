@@ -1,11 +1,11 @@
-1) Escrita no arquivo de resultados.txt dos processos       Completo        Dionísio
+1) Escrita no arquivo de resultados.txt dos processos       Completo        Dionisio
 2) Usar arquivos separados                                  Completo        Araujo
 3) Fazer makefile                                           Completo        Araujo
 4) Criar estrutura de estatísticas                          Completo        Araujo
 5) Escrever as estatísticas no arquivos logs.txt            Completo        Araujo
 6) Fazer terminal                                           Completo        Araujo
+7) Escrever script de validação do arquivo                  Completo        Dionisio
 
-7) Escrever script de validação do arquivo
 8) Escrever scripts de teste de desempenho
 9) Usar espera bloqueante nos processos
 10) Pensar no encerramento seguro do coordenador
