@@ -26,6 +26,16 @@ std::mutex mtx_send_grant;
 
 Process_fifo fifo;
 Record_list stats("log.txt");
+int num_releases_received = 0;
+int num_processes;
+int num_repetitions;
+
+
+void check_release_completion() {
+    while(num_releases_received != num_processes * num_repetitions) {}
+    std::cout << std::endl << "Received the specified number of releases. Finishing coordinator execution." << std::endl;
+    std::exit(0);
+}
 
 void send_grant(Process_info& process) 
 {
@@ -53,10 +63,12 @@ void release(int pid, const std::string& ip)
     stats.add_record(RELEASE, pid);
 
     fifo.pop();
-    if(!fifo.empty()) {
+    if (!fifo.empty()) {
         Process_info top_process = fifo.head();
         send_grant(top_process);
     }
+
+    num_releases_received++;
 }
 
 void terminal_interaction() {
@@ -96,11 +108,19 @@ void terminal_interaction() {
 
 int main(int argc, char** argv) 
 {
-    if(argc != 2) {
-        std::cout << "Usage: coordinator [thread_num]" << std::endl;
+    if(argc != 2 && argc != 4) {
+        std::cout << "Temrinal Usage: coordinator [thread_num]" << std::endl;
+        std::cout << "Test Usage: coordinator [thread_num] [processes_num] [repetitions_num]" << std::endl;
         return -1;
     }
+
+    bool terminal = true;
     int num_threads = std::stoi(argv[1]);
+    if (argc == 4) {
+        terminal = false;
+        num_processes = std::stoi(argv[2]);
+        num_repetitions = std::stoi(argv[3]);
+    }
 
     rpc::server srv(COORDINATOR_PORT);
 
@@ -109,7 +129,11 @@ int main(int argc, char** argv)
 
     srv.async_run(num_threads);
 
-    terminal_interaction();
+    if(terminal)
+        terminal_interaction();
+    else
+        check_release_completion();
+
 
     return 0;
 }
