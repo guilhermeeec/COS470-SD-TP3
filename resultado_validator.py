@@ -1,3 +1,5 @@
+import sys
+
 def verificar_arquivo(resultado_file, n, r):
     with open(resultado_file, 'r') as file:
         linhas = file.readlines()
@@ -36,10 +38,10 @@ def verificar_arquivo(resultado_file, n, r):
     
     return True
 
-# Exemplo de uso:
-n = 2  # Número de processos
-r = 10  # Número de repetições
-resultado_file = "resultado.txt"
+# Obter os argumentos da linha de comando
+resultado_file = sys.argv[1]
+n = int(sys.argv[2])
+r = int(sys.argv[3])
 
 correto = verificar_arquivo(resultado_file, n, r)
 if correto:
