@@ -109,7 +109,7 @@ void terminal_interaction() {
 int main(int argc, char** argv) 
 {
     if(argc != 2 && argc != 4) {
-        std::cout << "Temrinal Usage: coordinator [thread_num]" << std::endl;
+        std::cout << "Terminal Usage: coordinator [thread_num]" << std::endl;
         std::cout << "Test Usage: coordinator [thread_num] [processes_num] [repetitions_num]" << std::endl;
         return -1;
     }
