@@ -49,9 +49,9 @@ void send_grant(Process_info& process)
 void request(int pid, const std::string& ip, int port) 
 {
     Process_info process(pid, ip, port);
-    stats.add_record(REQUEST, process);
 
     mtx_send_grant.lock();
+    stats.add_record(REQUEST, process);
     if(fifo.empty())
         send_grant(process);
     fifo.push(process);
@@ -59,14 +59,15 @@ void request(int pid, const std::string& ip, int port)
 }
 
 void release(int pid, const std::string& ip)
-{
+{   
+    mtx_send_grant.lock();
     stats.add_record(RELEASE, pid);
-
     fifo.pop();
     if (!fifo.empty()) {
         Process_info top_process = fifo.head();
         send_grant(top_process);
     }
+    mtx_send_grant.unlock();
 
     num_releases_received++;
 }

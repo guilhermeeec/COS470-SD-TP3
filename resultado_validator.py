@@ -63,8 +63,8 @@ def calcular_diferenca_tempo(tempo_inicial, tempo_final):
     return f"{diferenca_segundos}.{diferenca_microssegundos:06d}"
 
 def salvar_diferenca_tempo(nome_arquivo, diferenca):
-    with open(nome_arquivo, 'w') as file:
-        file.write(diferenca)
+    with open(nome_arquivo, 'a') as file:
+        file.write(diferenca+"\n")
 
 # Obter os argumentos da linha de comando
 resultado_file = sys.argv[1]
