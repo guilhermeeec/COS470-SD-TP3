@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Valores de n a serem testados
-n_values=(2 4 8 16 32)
+n_values=(2 4 8 16 32 64)
 
 # Fixar r e k
-r=10
-k=2
+r=5
+k=1
 
 # Loop através dos valores de n
 for n in "${n_values[@]}"
@@ -28,7 +28,7 @@ do
     wait $coordinator_pid
 
     # Executa o validador de resultado e armazena a saída em uma variável
-    resultado_output=$(python3 resultado_validator.py "resultado.txt" $n $r "test1_time_execution.txt")
+    resultado_output=$(python3 resultado_validator.py "resultado.txt" $n $r "test2_time_execution.txt")
 
     # Verifica se a saída do validador de resultado contém a mensagem esperada
     if [[ $resultado_output == "The result is valid." ]]; then
@@ -37,12 +37,12 @@ do
         
         # Verifica se a saída do validador de log contém a mensagem esperada
         if [[ $log_output == "Log file was successfully validated" ]]; then
-            echo "Test 1 - n=$n: All validations done successfully."
+            echo "Test $n: All validations done successfully."
         else
-            echo "Test 1 - n=$n: Error: Log validation failed."
+            echo "Test $n: Error: Log validation failed."
         fi
     else
-        echo "Test 1 - n=$n: Error: Result validation failed."
+        echo "Test $n: Error: Result validation failed."
     fi
 
     # Limpa os arquivos de resultado e log para o próximo teste

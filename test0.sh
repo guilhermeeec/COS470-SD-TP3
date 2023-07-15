@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Executa o coordinator em segundo plano
-./coordinator 4 2 10 &
+./coordinator 4 2 5 &
 
 # Armazena o PID do coordinator
 coordinator_pid=$!
@@ -9,14 +9,14 @@ coordinator_pid=$!
 sleep 5
 
 # Executa os processos em segundo plano
-./process 0 10 2 &
-./process 1 10 2 &
+./process 0 5 1 &
+./process 1 5 1 &
 
 # Aguarda o coordinator terminar de executar
 wait $coordinator_pid
 
 # Executa o validador de resultado e armazena a saída em uma variável
-resultado_output=$(python3 resultado_validator.py "resultado.txt" 2 10 "test0_time_execution.txt")
+resultado_output=$(python3 resultado_validator.py "resultado.txt" 2 5 "test0_time_execution.txt")
 
 # Verifica se a saída do validador de resultado contém a mensagem esperada
 if [[ $resultado_output == "The result is valid." ]]; then
